@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}
+Categories
+{% endblock %}
+
+{% block body %}
+
+<div class="flex justify-between items-center mb-8">
+
+    <h1 class="text-3xl font-bold">
+        Categories
+    </h1>
+
+</div>
+
+<div class="bg-white rounded-2xl shadow p-6">
+
+    <form
+        method="POST"
+        action="/categories/add"
+        class="flex gap-4 mb-6"
+    >
+
+        <input
+            type="text"
+            name="name"
+            placeholder="Category name"
+            required
+            class="flex-1 border rounded-lg px-4 py-3"
+        >
+
+        <button
+            type="submit"
+            class="bg-black text-white px-6 rounded-lg"
+        >
+            Add
+        </button>
+
+    </form>
+
+    <div class="space-y-3">
+
+        {% for category in categories %}
+
+        <div class="flex justify-between items-center border rounded-xl p-4">
+
+            <span>
+                {{ category.name }}
+            </span>
+
+            <a
+                href="/categories/archive/{{ category.id }}"
+                class="text-red-500"
+            >
+                Archive
+            </a>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

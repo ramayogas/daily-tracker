@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}
+        Daily Tracker
+        {% endblock %}
+    </title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Flash Messages -->
+    <div class="fixed top-4 right-4 z-50 space-y-2">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="bg-white shadow-lg rounded-lg px-4 py-3 border-l-4
+                        {% if category == 'success' %}
+                            border-green-500
+                        {% elif category == 'danger' %}
+                            border-red-500
+                        {% elif category == 'warning' %}
+                            border-yellow-500
+                        {% else %}
+                            border-blue-500
+                        {% endif %}
+                    ">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+        {% endwith %}
+
+    </div>
+
+
+    {% if current_user.is_authenticated %}
+
+    <div class="flex">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-lg min-h-screen p-5">
+
+            <h1 class="text-2xl font-bold mb-8">
+                Daily Tracker
+            </h1>
+
+            <nav class="space-y-2">
+
+                <a href="/dashboard"
+                   class="block px-4 py-2 rounded-lg hover:bg-gray-100">
+                    Dashboard
+                </a>
+
+                <a href="/tasks"
+                   class="block px-4 py-2 rounded-lg hover:bg-gray-100">
+                    Tasks
+                </a>
+
+                <a href="/categories"
+                class="block px-4 py-2 rounded-lg hover:bg-gray-100">
+                    Categories
+                </a>
+
+                <a href="/logout"
+                   class="block px-4 py-2 rounded-lg text-red-500 hover:bg-red-50">
+                    Logout
+                </a>
+
+            </nav>
+
+        </aside>
+
+        <!-- Content -->
+        <main class="flex-1 p-8">
+            {% block body %}
+            {% endblock %}
+        </main>
+
+    </div>
+
+    {% else %}
+
+    <!-- Auth Pages -->
+    <main>
+        {% block auth_body %}
+        {% endblock %}
+    </main>
+
+    {% endif %}
+
+</body>
+</html>

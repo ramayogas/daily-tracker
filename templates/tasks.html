@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+
+{% block title %}
+Tasks
+{% endblock %}
+
+{% block body %}
+
+<div class="flex justify-between items-center mb-8">
+
+    <h1 class="text-3xl font-bold">
+        Tasks
+    </h1>
+
+</div>
+
+<div class="bg-white rounded-2xl shadow p-5 mb-6">
+
+    <form
+        method="GET"
+        action="/tasks"
+        class="grid md:grid-cols-4 gap-4"
+    >
+
+        <!-- Search -->
+        <input
+            type="text"
+            name="search"
+            placeholder="Search task..."
+            value="{{ search }}"
+            class="border rounded-lg px-4 py-3"
+        >
+
+        <!-- Status -->
+        <select
+            name="status"
+            class="border rounded-lg px-4 py-3"
+        >
+            <option value="all"
+                {% if status == "all" %}
+                selected
+                {% endif %}
+            >
+                All Status
+            </option>
+
+            <option value="pending"
+                {% if status == "pending" %}
+                selected
+                {% endif %}
+            >
+                Pending
+            </option>
+
+            <option value="done"
+                {% if status == "done" %}
+                selected
+                {% endif %}
+            >
+                Done
+            </option>
+
+        </select>
+
+
+        <!-- Urgency -->
+        <select
+            name="urgency"
+            class="border rounded-lg px-4 py-3"
+        >
+            <option value="all">
+                All Urgency
+            </option>
+
+            {% for level in [
+                "Low",
+                "Medium",
+                "High",
+                "Critical"
+            ] %}
+
+            <option
+                value="{{ level }}"
+                {% if urgency == level %}
+                selected
+                {% endif %}
+            >
+                {{ level }}
+            </option>
+
+            {% endfor %}
+        </select>
+
+
+        <!-- Category -->
+        <select
+            name="category"
+            class="border rounded-lg px-4 py-3"
+        >
+            <option value="all">
+                All Categories
+            </option>
+
+            {% for category in categories %}
+
+            <option
+                value="{{ category.id }}"
+                {% if selected_category|string
+                == category.id|string %}
+                selected
+                {% endif %}
+            >
+                {{ category.name }}
+            </option>
+
+            {% endfor %}
+        </select>
+
+
+        <button
+            type="submit"
+            class="bg-black text-white rounded-lg py-3 md:col-span-4"
+        >
+            Apply Filter
+        </button>
+
+    </form>
+
+</div>
+
+<!-- Add Task -->
+<div class="bg-white rounded-2xl shadow p-6 mb-8">
+
+    <form
+        method="POST"
+        action="/tasks/add"
+        class="space-y-4"
+    >
+
+        <input
+            type="text"
+            name="title"
+            placeholder="Task title"
+            required
+            class="w-full border rounded-lg px-4 py-3"
+        >
+
+        <!-- Task Type -->
+        <div>
+
+            <label class="font-medium mb-2 block">
+                Task Type
+            </label>
+
+            <select
+                id="taskType"
+                name="task_type"
+                class="w-full border rounded-lg px-4 py-3"
+            >
+                <option value="one_time">
+                    One Time
+                </option>
+
+                <option value="habit">
+                    Habit
+                </option>
+
+                <option value="schedule">
+                    Schedule
+                </option>
+            </select>
+
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+
+            <select
+                name="category_id"
+                class="border rounded-lg px-4 py-3"
+            >
+                <option value="">
+                    No Category
+                </option>
+
+                {% for category in categories %}
+                <option value="{{ category.id }}">
+                    {{ category.name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <select
+                name="urgency"
+                class="border rounded-lg px-4 py-3"
+            >
+                <option>Low</option>
+                <option selected>
+                    Medium
+                </option>
+                <option>High</option>
+                <option>Critical</option>
+            </select>
+
+        </div>
+
+        <div id="dueDateSection">
+
+            <input
+                type="datetime-local"
+                name="due_date"
+                class="w-full border rounded-lg px-4 py-3"
+            >
+
+        </div>
+
+        <!-- Habit Days -->
+        <div
+            id="habitSection"
+            class="hidden"
+        >
+
+            <label class="font-medium mb-3 block">
+                Repeat Days
+            </label>
+
+            <div class="grid grid-cols-4 gap-3">
+
+                {% for day in [
+                    "mon",
+                    "tue",
+                    "wed",
+                    "thu",
+                    "fri",
+                    "sat",
+                    "sun"
+                ] %}
+
+                <label class="
+                    border rounded-lg
+                    px-4 py-3
+                    flex items-center gap-2
+                ">
+
+                    <input
+                        type="checkbox"
+                        name="repeat_days"
+                        value="{{ day }}"
+                    >
+
+                    {{ day.capitalize() }}
+
+                </label>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <!-- Schedule Repeat -->
+        <div
+            id="scheduleSection"
+            class="hidden"
+        >
+
+            <label class="font-medium mb-2 block">
+                Repeat Type
+            </label>
+
+            <select
+                name="repeat_type"
+                class="w-full border rounded-lg px-4 py-3"
+            >
+                <option value="">
+                    Select Repeat
+                </option>
+
+                <option value="daily">
+                    Daily
+                </option>
+
+                <option value="weekly">
+                    Weekly
+                </option>
+
+                <option value="monthly">
+                    Monthly
+                </option>
+
+            </select>
+
+        </div>
+
+        <textarea
+            name="note"
+            placeholder="Notes"
+            class="w-full border rounded-lg px-4 py-3"
+        ></textarea>
+
+        <button
+            type="submit"
+            class="bg-black text-white px-6 py-3 rounded-lg"
+        >
+            Add Task
+        </button>
+
+    </form>
+
+</div>
+
+
+<!-- Task List -->
+<div class="space-y-4">
+
+    {% for task in tasks %}
+
+    <div class="bg-white rounded-2xl shadow p-5">
+
+        <div class="flex justify-between items-start">
+
+            <div class="flex gap-4">
+
+                <!-- Checkbox -->
+                <a
+                    href="/tasks/toggle/{{ task.id }}"
+                    class="text-2xl"
+                >
+                    {% if task.is_done %}
+                        ✅
+                    {% else %}
+                        ⬜
+                    {% endif %}
+                </a>
+
+                <div>
+
+                    <!-- Title -->
+                    <h2 class="
+                        text-lg font-semibold
+                        {% if task.is_done %}
+                            line-through text-gray-400
+                        {% endif %}
+                    ">
+                        {{ task.title }}
+                    </h2>
+
+
+                    <!-- Urgency Badge -->
+                    <div class="mt-2">
+
+                        {% if task.urgency == "Low" %}
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                                Low
+                            </span>
+
+                        {% elif task.urgency == "Medium" %}
+                            <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+                                Medium
+                            </span>
+
+                        {% elif task.urgency == "High" %}
+                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
+                                High
+                            </span>
+
+                        {% else %}
+                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+                                Critical
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Due Date -->
+                    {% if task.due_date %}
+                    <p class="text-sm text-gray-500 mt-3">
+                        ⏰ Due:
+                        {{ task.due_date.strftime('%d %b %Y %H:%M') }}
+                    </p>
+                    {% endif %}
+
+
+                    <!-- Notes -->
+                    {% if task.note %}
+                    <p class="mt-3 text-gray-700">
+                        {{ task.note }}
+                    </p>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- Delete -->
+            <div class="flex gap-4">
+
+    <a
+        href="/tasks/edit/{{ task.id }}"
+        class="text-blue-500 hover:text-blue-700"
+    >
+        Edit
+    </a>
+
+    <a
+        href="/tasks/archive/{{ task.id }}"
+        class="text-red-500 hover:text-red-700"
+    >
+        Archive
+    </a>
+
+</div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+<script>
+
+const taskType =
+    document.getElementById(
+        "taskType"
+    )
+
+const dueDateSection =
+    document.getElementById(
+        "dueDateSection"
+    )
+
+const habitSection =
+    document.getElementById(
+        "habitSection"
+    )
+
+const scheduleSection =
+    document.getElementById(
+        "scheduleSection"
+    )
+
+
+function updateTaskUI() {
+
+    const value =
+        taskType.value
+
+    dueDateSection.classList.add(
+        "hidden"
+    )
+
+    habitSection.classList.add(
+        "hidden"
+    )
+
+    scheduleSection.classList.add(
+        "hidden"
+    )
+
+
+    if (
+        value === "one_time"
+    ) {
+
+        dueDateSection.classList.remove(
+            "hidden"
+        )
+
+    }
+
+    if (
+        value === "habit"
+    ) {
+
+        habitSection.classList.remove(
+            "hidden"
+        )
+
+    }
+
+    if (
+        value === "schedule"
+    ) {
+
+        scheduleSection.classList.remove(
+            "hidden"
+        )
+
+    }
+
+}
+
+taskType.addEventListener(
+    "change",
+    updateTaskUI
+)
+
+updateTaskUI()
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}
+Register
+{% endblock %}
+
+{% block auth_body %}
+
+<div class="min-h-screen flex items-center justify-center">
+
+    <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
+
+        <h1 class="text-3xl font-bold mb-6 text-center">
+            Register
+        </h1>
+
+        <form method="POST" class="space-y-4">
+
+            <div>
+                <label>Username</label>
+
+                <input
+                    type="text"
+                    name="username"
+                    required
+                    class="w-full border rounded-lg px-4 py-2"
+                >
+            </div>
+
+            <div>
+                <label>Email</label>
+
+                <input
+                    type="email"
+                    name="email"
+                    required
+                    class="w-full border rounded-lg px-4 py-2"
+                >
+            </div>
+
+            <div>
+                <label>Password</label>
+
+                <input
+                    type="password"
+                    name="password"
+                    required
+                    class="w-full border rounded-lg px-4 py-2"
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="w-full bg-black text-white py-3 rounded-lg"
+            >
+                Register
+            </button>
+
+        </form>
+
+        <p class="text-center mt-4">
+            Already have account?
+
+            <a
+                href="/login"
+                class="text-blue-500"
+            >
+                Login
+            </a>
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}
