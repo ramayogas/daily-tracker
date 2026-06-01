@@ -9,7 +9,6 @@ Edit Task
 <div class="max-w-3xl mx-auto">
 
     <div class="flex justify-between items-center mb-8">
-
         <h1 class="text-3xl font-bold">
             Edit Task
         </h1>
@@ -20,9 +19,7 @@ Edit Task
         >
             ← Back
         </a>
-
     </div>
-
 
     <div class="bg-white rounded-2xl shadow p-6">
 
@@ -31,6 +28,7 @@ Edit Task
             class="space-y-4"
         >
 
+            <!-- Title -->
             <input
                 type="text"
                 name="title"
@@ -39,7 +37,51 @@ Edit Task
                 class="w-full border rounded-lg px-4 py-3"
             >
 
+            <!-- Task Type -->
+            <div>
 
+                <label class="block mb-2 font-medium">
+                    Task Type
+                </label>
+
+                <select
+                    id="taskType"
+                    name="task_type"
+                    class="w-full border rounded-lg px-4 py-3"
+                >
+
+                    <option
+                        value="one_time"
+                        {% if task.task_type == "one_time" %}
+                        selected
+                        {% endif %}
+                    >
+                        One Time
+                    </option>
+
+                    <option
+                        value="habit"
+                        {% if task.task_type == "habit" %}
+                        selected
+                        {% endif %}
+                    >
+                        Habit
+                    </option>
+
+                    <option
+                        value="custom"
+                        {% if task.task_type == "custom" %}
+                        selected
+                        {% endif %}
+                    >
+                        Custom
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- Category + Urgency -->
             <div class="grid grid-cols-2 gap-4">
 
                 <select
@@ -52,20 +94,17 @@ Edit Task
                     </option>
 
                     {% for category in categories %}
-
                     <option
                         value="{{ category.id }}"
                         {% if task.category_id == category.id %}
-                            selected
+                        selected
                         {% endif %}
                     >
                         {{ category.name }}
                     </option>
-
                     {% endfor %}
 
                 </select>
-
 
                 <select
                     name="urgency"
@@ -73,6 +112,7 @@ Edit Task
                 >
 
                     <option
+                        value="Low"
                         {% if task.urgency == "Low" %}
                         selected
                         {% endif %}
@@ -81,6 +121,7 @@ Edit Task
                     </option>
 
                     <option
+                        value="Medium"
                         {% if task.urgency == "Medium" %}
                         selected
                         {% endif %}
@@ -89,6 +130,7 @@ Edit Task
                     </option>
 
                     <option
+                        value="High"
                         {% if task.urgency == "High" %}
                         selected
                         {% endif %}
@@ -97,6 +139,7 @@ Edit Task
                     </option>
 
                     <option
+                        value="Critical"
                         {% if task.urgency == "Critical" %}
                         selected
                         {% endif %}
@@ -108,21 +151,124 @@ Edit Task
 
             </div>
 
+            <!-- Due Date -->
+            <div>
 
-            <input
-                type="datetime-local"
-                name="due_date"
-                value="{% if task.due_date %}{{ task.due_date.strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
-                class="w-full border rounded-lg px-4 py-3"
+                <label class="block mb-2 font-medium">
+                    Date & Time
+                </label>
+
+                <input
+                    type="datetime-local"
+                    name="due_date"
+                    value="{% if task.due_date %}{{ task.due_date.strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
+                    class="w-full border rounded-lg px-4 py-3"
+                >
+
+            </div>
+
+            <!-- Habit -->
+            <div
+                id="habitSection"
+                class="hidden"
             >
 
+                <label class="font-medium mb-3 block">
+                    Repeat Days
+                </label>
 
+                <div class="grid grid-cols-4 gap-3">
+
+                    {% for day in [
+                        "mon",
+                        "tue",
+                        "wed",
+                        "thu",
+                        "fri",
+                        "sat",
+                        "sun"
+                    ] %}
+
+                    <label class="
+                        border rounded-lg
+                        px-4 py-3
+                        flex items-center gap-2
+                    ">
+
+                        <input
+                            type="checkbox"
+                            name="repeat_days"
+                            value="{{ day }}"
+                            {% if task.repeat_days and day in task.repeat_days %}
+                            checked
+                            {% endif %}
+                        >
+
+                        {{ day.capitalize() }}
+
+                    </label>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+            <!-- Custom -->
+            <div
+                id="customSection"
+                class="hidden"
+            >
+
+                <label class="font-medium mb-2 block">
+                    Custom Recurrence
+                </label>
+
+                <select
+                    name="custom_type"
+                    class="w-full border rounded-lg px-4 py-3 mb-3"
+                >
+
+                    <option value="">
+                        Select Type
+                    </option>
+
+                    <option
+                        value="every_n_days"
+                        {% if task.custom_type == "every_n_days" %}
+                        selected
+                        {% endif %}
+                    >
+                        Every X Days
+                    </option>
+
+                    <option
+                        value="day_of_month"
+                        {% if task.custom_type == "day_of_month" %}
+                        selected
+                        {% endif %}
+                    >
+                        Every Month On Date
+                    </option>
+
+                </select>
+
+                <input
+                    type="number"
+                    name="custom_value"
+                    value="{{ task.custom_value or '' }}"
+                    placeholder="Value"
+                    class="w-full border rounded-lg px-4 py-3"
+                >
+
+            </div>
+
+            <!-- Notes -->
             <textarea
                 name="note"
-                class="w-full border rounded-lg px-4 py-3"
                 rows="5"
+                class="w-full border rounded-lg px-4 py-3"
             >{{ task.note or '' }}</textarea>
-
 
             <button
                 type="submit"
@@ -136,5 +282,58 @@ Edit Task
     </div>
 
 </div>
+
+<script>
+
+const taskType =
+    document.getElementById(
+        "taskType"
+    )
+
+const habitSection =
+    document.getElementById(
+        "habitSection"
+    )
+
+const customSection =
+    document.getElementById(
+        "customSection"
+    )
+
+function updateTaskUI() {
+
+    habitSection.classList.add(
+        "hidden"
+    )
+
+    customSection.classList.add(
+        "hidden"
+    )
+
+    if (
+        taskType.value === "habit"
+    ) {
+        habitSection.classList.remove(
+            "hidden"
+        )
+    }
+
+    if (
+        taskType.value === "custom"
+    ) {
+        customSection.classList.remove(
+            "hidden"
+        )
+    }
+}
+
+taskType.addEventListener(
+    "change",
+    updateTaskUI
+)
+
+updateTaskUI()
+
+</script>
 
 {% endblock %}

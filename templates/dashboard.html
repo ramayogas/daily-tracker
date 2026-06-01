@@ -42,6 +42,8 @@ Dashboard
         <h2 class="text-3xl font-bold mt-2">
             {{ pending_tasks }}
         </h2>
+
+        
     </div>
 
     <div class="bg-white rounded-2xl shadow p-5">
@@ -94,39 +96,202 @@ Dashboard
         <h2 class="font-bold text-xl mb-4">
             Today's Pending Tasks
         </h2>
-
-        {% if todays_pending %}
-
+        <a
+            href="/tasks?status=pending"
+            class="text-sm text-blue-600 hover:underline"
+        >
+            See More →
+        </a>
+        {% if today_tasks %}
             <div class="space-y-3">
-
-                {% for task in todays_pending %}
-
+                {% for task in today_tasks %}
                 <div class="border rounded-xl p-4">
+                    <div class="flex gap-3">
 
-                    <h3 class="font-semibold">
-                        {{ task.title }}
-                    </h3>
+                        <a
+                            href="/tasks/toggle/{{ task.id }}?next=dashboard"
+                            class="text-xl"
+                        >
+                            {% if task.is_done %}
+                                ✅
+                            {% else %}
+                                ⬜
+                            {% endif %}
+                        </a>
 
-                    <p class="text-sm text-gray-500">
-                        {{ task.due_date.strftime('%H:%M') }}
-                    </p>
+                        <div>
 
+                            <h3 class="font-semibold">
+                                {{ task.title }}
+                            </h3>
+
+                            <p class="text-sm text-gray-500">
+
+                                {% if task.repeat_days %}
+                                    🔁 {{ task.repeat_days|pretty_days }}<br>
+                                {% endif %}
+
+                                {% if task.due_date %}
+                                    ⏰ {{ task.due_date.strftime('%H:%M') }}
+                                {% endif %}
+
+                            </p>
+
+                        </div>
+
+                    </div>
                 </div>
-
                 {% endfor %}
-
             </div>
+        {% else %}
+            <div class="text-center py-10">
+                <div class="text-5xl mb-3">
+                    🎉
+                </div>
+                <h3 class="font-semibold text-gray-700">
+                    No habits today
+                </h3>
+                <p class="text-sm text-gray-500 mt-1">
+                    Enjoy your free time or create a new habit.
+                </p>
+            </div>
+        {% endif %}
+    </div>
 
+        <!-- Today's Habit Tasks -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+
+        <div class="flex items-center justify-between mb-5">
+
+            <div>
+                <h2 class="font-bold text-xl text-gray-800">
+                    Today's Habits
+                </h2>
+                <a
+                    href="/tasks?task_type=habit"
+                    class="text-sm text-blue-600 hover:underline"
+                >
+                    See More →
+                </a>
+                <p class="text-sm text-gray-500">
+                    Stay consistent and build momentum.
+                </p>
+            </div>
+        </div>
+
+        {% if habit_tasks %}
+            <div class="space-y-4">
+                {% for task in habit_tasks %}
+                <div class="border border-gray-200 rounded-xl p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <a
+                                    href="/tasks/toggle/{{ task.id }}"
+                                    class="text-xl"
+                                >
+                                    {% if task.is_done %}
+                                        ✅
+                                    {% else %}
+                                        ⬜
+                                    {% endif %}
+                                </a>
+                                <h3 class="font-semibold">
+                                    {{ task.title }}
+                                </h3>
+                            </div>
+                            {% if task.note %}
+                            <p class="text-sm text-gray-500 mt-1">
+                                {{ task.note }}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <span class="
+                            px-3 py-1 rounded-full text-xs font-medium
+                            {% if task.urgency == 'High' %}
+                                bg-red-100 text-red-700
+                            {% elif task.urgency == 'Medium' %}
+                                bg-yellow-100 text-yellow-700
+                            {% else %}
+                                bg-green-100 text-green-700
+                            {% endif %}
+                        ">
+                            {{ task.urgency }}
+                        </span>
+
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 mt-4 text-sm">
+                        {% if task.due_date %}
+                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+                            ⏰ {{ task.due_date.strftime('%H:%M') }}
+                        </span>
+                        {% endif %}
+                        {% if task.repeat_days %}
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs">
+                            {{ task.repeat_days | pretty_days }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         {% else %}
 
-            <p class="text-gray-400">
-                No pending tasks today 🎉
-            </p>
+            <div class="text-center py-10">
+                <div class="text-5xl mb-3">
+                    🎉
+                </div>
+
+                <h3 class="font-semibold text-gray-700">
+                    No habits today
+                </h3>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Enjoy your free time or create a new habit.
+                </p>
+
+            </div>
 
         {% endif %}
 
     </div>
 
+    <!-- Custom Tasks 
+    <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="font-bold text-xl mb-4">
+            Custom Tasks
+        </h2>
+        {% if custom_tasks %}
+            <div class="space-y-3">
+                {% for task in custom_tasks %}
+                <div class="border rounded-xl p-4">
+                    <h3 class="font-semibold">
+                        {{ task.title }}
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        {% if task.custom_type == "every_n_days" %}
+                            🔁 Every {{ task.custom_value }} day(s)
+                        {% endif %}
+                        {% if task.custom_type == "day_of_month" %}
+                            📅 Every month on day {{ task.custom_value }}
+                        {% endif %}
+                    </p>
+                    {% if task.due_date %}
+                    <p class="text-sm text-blue-600 mt-2">
+                        ⏰ {{ task.due_date.strftime('%H:%M') }}
+                    </p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-400">
+                No custom tasks
+            </p>
+        {% endif %}
+    </div> -->
 
     <!-- Recent Completed -->
     <div class="bg-white rounded-2xl shadow p-6">
@@ -136,33 +301,20 @@ Dashboard
         </h2>
 
         {% if recent_completed %}
-
             <div class="space-y-3">
-
                 {% for task in recent_completed %}
-
                 <div class="border rounded-xl p-4">
-
                     <h3 class="line-through text-gray-500">
                         {{ task.title }}
                     </h3>
-
                 </div>
-
                 {% endfor %}
-
             </div>
-
         {% else %}
-
             <p class="text-gray-400">
                 No completed tasks yet
             </p>
-
         {% endif %}
-
     </div>
-
 </div>
-
 {% endblock %}

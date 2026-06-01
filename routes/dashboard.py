@@ -12,6 +12,9 @@ from flask_login import (
 
 from models.task import Task
 
+from utils.recurring import (
+    is_due_today
+)
 
 dashboard_bp = Blueprint(
     "dashboard",
@@ -51,16 +54,32 @@ def dashboard():
             ) * 100
         )
 
-    todays_pending = [
-        task for task in all_tasks
-        if (
-            not task.is_done and
-            task.due_date and
-            task.due_date.date()
-            == datetime.today().date()
-        )
-    ]
+    today = datetime.today().date()
 
+    today_tasks = [
+    task
+    for task in all_tasks
+    if (
+        not task.is_done
+        and is_due_today(task)
+    )
+]
+    
+    today_tasks = sorted(
+        today_tasks,
+        key=lambda x: x.due_date or datetime.max
+    )[:5]
+  
+    habit_tasks = [
+        task
+        for task in all_tasks
+        if (
+            task.task_type == "habit"
+            and not task.is_done
+            and is_due_today(task)
+        )
+    ][:5]
+    
     recent_completed = sorted(
         [
             task for task in all_tasks
@@ -69,13 +88,23 @@ def dashboard():
         key=lambda x: x.created_at,
         reverse=True
     )[:5]
+    
+    custom_tasks = [
+        task for task in all_tasks
+        if (
+            task.task_type == "custom"
+            and not task.is_done
+        )
+    ]
 
     return render_template(
-        "dashboard.html",
-        total_tasks=total_tasks,
-        completed_tasks=completed_tasks,
-        pending_tasks=pending_tasks,
-        completion_rate=completion_rate,
-        todays_pending=todays_pending,
-        recent_completed=recent_completed
-    )
+    "dashboard.html",
+    total_tasks=total_tasks,
+    completed_tasks=completed_tasks,
+    pending_tasks=pending_tasks,
+    completion_rate=completion_rate,
+    today_tasks=today_tasks,
+    habit_tasks=habit_tasks,
+    custom_tasks=custom_tasks,
+    recent_completed=recent_completed
+)

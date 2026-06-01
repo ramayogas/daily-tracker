@@ -1,325 +1,357 @@
 {% extends "base.html" %}
 
 {% block title %}
-Tasks
+Task
 {% endblock %}
 
 {% block body %}
 
 <div class="flex justify-between items-center mb-8">
-
     <h1 class="text-3xl font-bold">
         Tasks
-    </h1>
-
-</div>
-
-<div class="bg-white rounded-2xl shadow p-5 mb-6">
-
-    <form
-        method="GET"
-        action="/tasks"
-        class="grid md:grid-cols-4 gap-4"
-    >
-
-        <!-- Search -->
-        <input
-            type="text"
-            name="search"
-            placeholder="Search task..."
-            value="{{ search }}"
-            class="border rounded-lg px-4 py-3"
-        >
-
-        <!-- Status -->
-        <select
-            name="status"
-            class="border rounded-lg px-4 py-3"
-        >
-            <option value="all"
-                {% if status == "all" %}
-                selected
-                {% endif %}
-            >
-                All Status
-            </option>
-
-            <option value="pending"
-                {% if status == "pending" %}
-                selected
-                {% endif %}
-            >
-                Pending
-            </option>
-
-            <option value="done"
-                {% if status == "done" %}
-                selected
-                {% endif %}
-            >
-                Done
-            </option>
-
-        </select>
-
-
-        <!-- Urgency -->
-        <select
-            name="urgency"
-            class="border rounded-lg px-4 py-3"
-        >
-            <option value="all">
-                All Urgency
-            </option>
-
-            {% for level in [
-                "Low",
-                "Medium",
-                "High",
-                "Critical"
-            ] %}
-
-            <option
-                value="{{ level }}"
-                {% if urgency == level %}
-                selected
-                {% endif %}
-            >
-                {{ level }}
-            </option>
-
-            {% endfor %}
-        </select>
-
-
-        <!-- Category -->
-        <select
-            name="category"
-            class="border rounded-lg px-4 py-3"
-        >
-            <option value="all">
-                All Categories
-            </option>
-
-            {% for category in categories %}
-
-            <option
-                value="{{ category.id }}"
-                {% if selected_category|string
-                == category.id|string %}
-                selected
-                {% endif %}
-            >
-                {{ category.name }}
-            </option>
-
-            {% endfor %}
-        </select>
-
-
-        <button
-            type="submit"
-            class="bg-black text-white rounded-lg py-3 md:col-span-4"
-        >
-            Apply Filter
-        </button>
-
-    </form>
-
-</div>
-
-<!-- Add Task -->
-<div class="bg-white rounded-2xl shadow p-6 mb-8">
-
-    <form
-        method="POST"
-        action="/tasks/add"
-        class="space-y-4"
-    >
-
-        <input
-            type="text"
-            name="title"
-            placeholder="Task title"
-            required
-            class="w-full border rounded-lg px-4 py-3"
-        >
-
-        <!-- Task Type -->
-        <div>
-
-            <label class="font-medium mb-2 block">
-                Task Type
-            </label>
-
-            <select
-                id="taskType"
-                name="task_type"
-                class="w-full border rounded-lg px-4 py-3"
-            >
-                <option value="one_time">
-                    One Time
-                </option>
-
-                <option value="habit">
-                    Habit
-                </option>
-
-                <option value="schedule">
-                    Schedule
-                </option>
-            </select>
-
+        <div class="text-lg font-normal text-gray-500">
+            {{ now.strftime('%A, %d %B %Y') }}
         </div>
+    </h1>
+    <div>
+        <button
+            onclick="openAddTaskModal()"
+            class="bg-black text-white px-5 py-3 rounded-xl"
+        >
+            + Add Task
+        </button>
+        <button
+            onclick="openFilterModal()"
+            class="border px-5 py-3 rounded-xl"
+        >
+            Filter        
+        </button>
+    </div>
+</div>
 
-        <div class="grid grid-cols-2 gap-4">
-
-            <select
-                name="category_id"
+<div
+    id="filterModal"
+    class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+>
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">
+                Filter Tasks
+            </h2>
+            <button
+                onclick="closeFilterModal()"
+            >
+                ✕
+            </button>
+        </div>
+        <form
+            method="GET"
+            action="/tasks"
+            class="grid md:grid-cols-4 gap-4"
+        >
+            <!-- Search -->
+            <input
+                type="text"
+                name="search"
+                placeholder="Search task..."
+                value="{{ search }}"
                 class="border rounded-lg px-4 py-3"
             >
-                <option value="">
-                    No Category
+            <!-- Status -->
+            <select
+                name="status"
+                class="border rounded-lg px-4 py-3"
+            >
+                <option value="all"
+                    {% if status == "all" %}
+                    selected
+                    {% endif %}
+                >
+                    All Status
                 </option>
 
-                {% for category in categories %}
-                <option value="{{ category.id }}">
-                    {{ category.name }}
+                <option value="pending"
+                    {% if status == "pending" %}
+                    selected
+                    {% endif %}
+                >
+                    Pending
                 </option>
-                {% endfor %}
+
+                <option value="done"
+                    {% if status == "done" %}
+                    selected
+                    {% endif %}
+                >
+                    Done
+                </option>
+
             </select>
 
+
+            <!-- Urgency -->
             <select
                 name="urgency"
                 class="border rounded-lg px-4 py-3"
             >
-                <option>Low</option>
-                <option selected>
-                    Medium
+                <option value="all">
+                    All Urgency
                 </option>
-                <option>High</option>
-                <option>Critical</option>
-            </select>
 
-        </div>
-
-        <div id="dueDateSection">
-
-            <input
-                type="datetime-local"
-                name="due_date"
-                class="w-full border rounded-lg px-4 py-3"
-            >
-
-        </div>
-
-        <!-- Habit Days -->
-        <div
-            id="habitSection"
-            class="hidden"
-        >
-
-            <label class="font-medium mb-3 block">
-                Repeat Days
-            </label>
-
-            <div class="grid grid-cols-4 gap-3">
-
-                {% for day in [
-                    "mon",
-                    "tue",
-                    "wed",
-                    "thu",
-                    "fri",
-                    "sat",
-                    "sun"
+                {% for level in [
+                    "Low",
+                    "Medium",
+                    "High",
+                    "Critical"
                 ] %}
 
-                <label class="
-                    border rounded-lg
-                    px-4 py-3
-                    flex items-center gap-2
-                ">
-
-                    <input
-                        type="checkbox"
-                        name="repeat_days"
-                        value="{{ day }}"
-                    >
-
-                    {{ day.capitalize() }}
-
-                </label>
+                <option
+                    value="{{ level }}"
+                    {% if urgency == level %}
+                    selected
+                    {% endif %}
+                >
+                    {{ level }}
+                </option>
 
                 {% endfor %}
-
-            </div>
-
-        </div>
-
-        <!-- Schedule Repeat -->
-        <div
-            id="scheduleSection"
-            class="hidden"
-        >
-
-            <label class="font-medium mb-2 block">
-                Repeat Type
-            </label>
-
-            <select
-                name="repeat_type"
-                class="w-full border rounded-lg px-4 py-3"
-            >
-                <option value="">
-                    Select Repeat
-                </option>
-
-                <option value="daily">
-                    Daily
-                </option>
-
-                <option value="weekly">
-                    Weekly
-                </option>
-
-                <option value="monthly">
-                    Monthly
-                </option>
-
             </select>
 
+
+            <!-- Category -->
+            <select
+                name="category"
+                class="border rounded-lg px-4 py-3"
+            >
+                <option value="all">
+                    All Categories
+                </option>
+
+                {% for category in categories %}
+
+                <option
+                    value="{{ category.id }}"
+                    {% if selected_category|string
+                    == category.id|string %}
+                    selected
+                    {% endif %}
+                >
+                    {{ category.name }}
+                </option>
+
+                {% endfor %}
+            </select>
+
+
+            <button
+                type="submit"
+                class="bg-black text-white rounded-lg py-3 md:col-span-4"
+            >
+                Apply Filter
+            </button>
+
+        </form>
+    </div>
+</div>
+
+
+
+<!-- Add Task -->
+<!-- Add Task Modal -->
+<div
+    id="addTaskModal"
+    class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+>
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">
+                Add Task
+            </h2>
+            <button
+                onclick="closeAddTaskModal()"
+                class="text-gray-500 text-xl"
+            >
+                ✕
+            </button>
+            
         </div>
 
-        <textarea
-            name="note"
-            placeholder="Notes"
-            class="w-full border rounded-lg px-4 py-3"
-        ></textarea>
 
-        <button
-            type="submit"
-            class="bg-black text-white px-6 py-3 rounded-lg"
+        <form
+            method="POST"
+            action="/tasks/add"
+            class="space-y-4"
         >
-            Add Task
-        </button>
+            <input
+                type="text"
+                name="title"
+                placeholder="Task title"
+                required
+                class="w-full border rounded-lg px-4 py-3"
+            >
+            
+            <!-- Task Type -->
+            <div>
+                <label class="font-medium mb-2 block">
+                    Task Type
+                </label>
 
-    </form>
+                <select
+                    id="taskType"
+                    name="task_type"
+                    class="w-full border rounded-lg px-4 py-3"
+>
+                    <option value="one_time">
+                        One Time
+                    </option>
+                    <option value="habit">
+                        Habit
+                    </option>
+                    <option value="custom">
+                        Custom
+                    </option>
+                </select>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label class="block mb-1 mt-4 font-medium">
+                        Category
+                    </label>
+                    <select
+                    name="category_id"
+                    class="w-full border rounded-lg px-4 py-3"
+                    >   
+                    <option value="">
+                        No Category
+                    </option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                </div>
+                <div>
+                    <label class="block mb-1 mt-4 font-medium">
+                        Urgency
+                    </label>
+                    <select
+                    name="urgency"
+                    class="w-full border rounded-lg px-4 py-3"
+                >
+                    <option>Low</option>
+                    <option selected>
+                        Medium
+                    </option>
+                    <option>High</option>
+                    <option>Critical</option>
+                </select>
+                </div>
 
+                <div>
+                    <label class="block mb-1 mt-4 font-medium">
+                        Date & Time
+                    </label>
+                    <input
+                        type="datetime-local"
+                        name="due_date"
+                        class="w-full border rounded-lg p-2"
+                    >
+                </div>
+            </div>
+
+            <div id="dueDateSection">
+            </div>
+
+            <!-- Habit Days -->
+            <div
+                id="habitSection"
+                class="hidden"
+            >
+                <label class="font-medium mb-3 block">
+                    Repeat Days
+                </label>
+                <div class="grid grid-cols-4 gap-3">
+
+                    {% for day in [
+                        "mon",
+                        "tue",
+                        "wed",
+                        "thu",
+                        "fri",
+                        "sat",
+                        "sun"
+                    ] %}
+
+                    <label class="
+                        border rounded-lg
+                        px-4 py-3
+                        flex items-center gap-2
+                    ">
+
+                        <input
+                            type="checkbox"
+                            name="repeat_days"
+                            value="{{ day }}"
+                        >
+
+                        {{ day.capitalize() }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Custom Repeat -->
+            <div
+                id="customSection"
+                class="hidden"
+            >
+
+                <label class="font-medium mb-2 block">
+                    Repeat Type
+                </label>
+                <select name="custom_type">
+                <option value="">
+                    Select Type
+                </option>
+                <option value="every_n_days">
+                    Every X Days
+                </option>
+                <option value="day_of_month">
+                    Every Month On Date
+                </option>
+            </select>
+            <input
+                type="number"
+                name="custom_value"
+                placeholder="Value"
+            >
+            </div>
+
+            <textarea
+                name="note"
+                placeholder="Notes"
+                class="w-full border rounded-lg px-4 py-3"
+            ></textarea>
+
+            <button
+                type="submit"
+                class="bg-black text-white px-6 py-3 rounded-lg"
+            >
+                Add Task
+            </button>
+
+        </form>
+    </div>
 </div>
 
 
 <!-- Task List -->
 <div class="space-y-4">
-
     {% for task in tasks %}
-
     <div class="bg-white rounded-2xl shadow p-5">
-
         <div class="flex justify-between items-start">
-
             <div class="flex gap-4">
-
                 <!-- Checkbox -->
                 <a
                     href="/tasks/toggle/{{ task.id }}"
@@ -331,7 +363,6 @@ Tasks
                         ⬜
                     {% endif %}
                 </a>
-
                 <div>
 
                     <!-- Title -->
@@ -343,32 +374,41 @@ Tasks
                     ">
                         {{ task.title }}
                     </h2>
-
+                    <div class="mt-2">
+                        {% if task.task_type == "one_time" %}
+                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                            One Time
+                        </span>
+                        {% elif task.task_type == "habit" %}
+                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">
+                            Habit
+                        </span>
+                        {% elif task.task_type == "custom" %}
+                        <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs">
+                            Custom
+                        </span>
+                        {% endif %}
+                    </div>
 
                     <!-- Urgency Badge -->
                     <div class="mt-2">
-
                         {% if task.urgency == "Low" %}
                             <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
                                 Low
                             </span>
-
                         {% elif task.urgency == "Medium" %}
                             <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
                                 Medium
                             </span>
-
                         {% elif task.urgency == "High" %}
                             <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
                                 High
                             </span>
-
                         {% else %}
                             <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
                                 Critical
                             </span>
                         {% endif %}
-
                     </div>
 
 
@@ -395,29 +435,22 @@ Tasks
 
             <!-- Delete -->
             <div class="flex gap-4">
-
-    <a
-        href="/tasks/edit/{{ task.id }}"
-        class="text-blue-500 hover:text-blue-700"
-    >
-        Edit
-    </a>
-
-    <a
-        href="/tasks/archive/{{ task.id }}"
-        class="text-red-500 hover:text-red-700"
-    >
-        Archive
-    </a>
-
-</div>
-
+                <a
+                    href="/tasks/edit/{{ task.id }}"
+                    class="text-blue-500 hover:text-blue-700"
+                >
+                    Edit
+                </a>
+                <a
+                    href="/tasks/archive/{{ task.id }}"
+                    class="text-red-500 hover:text-red-700"
+                >
+                    Archive
+                </a>
+            </div>
         </div>
-
     </div>
-
     {% endfor %}
-
 </div>
 
 <script>
@@ -437,14 +470,14 @@ const habitSection =
         "habitSection"
     )
 
-const scheduleSection =
+const customSection =
     document.getElementById(
-        "scheduleSection"
+        "customSection"
     )
 
 
 function updateTaskUI() {
-
+console.log(taskType.value)
     const value =
         taskType.value
 
@@ -456,43 +489,58 @@ function updateTaskUI() {
         "hidden"
     )
 
-    scheduleSection.classList.add(
+    customSection.classList.add(
         "hidden"
     )
 
 
     if (
-        value === "one_time"
+        value === "custom"
     ) {
-
         dueDateSection.classList.remove(
             "hidden"
         )
-
     }
 
     if (
         value === "habit"
     ) {
-
         habitSection.classList.remove(
             "hidden"
         )
-
     }
 
     if (
-        value === "schedule"
+        value === "custom"
     ) {
-
-        scheduleSection.classList.remove(
+        customSection.classList.remove(
             "hidden"
         )
-
     }
 
 }
+function openFilterModal() {
+    document
+        .getElementById("filterModal")
+        .classList.remove("hidden");
+}
 
+function closeFilterModal() {
+    document
+        .getElementById("filterModal")
+        .classList.add("hidden");
+}
+function openAddTaskModal() {
+    document
+        .getElementById("addTaskModal")
+        .classList.remove("hidden");
+}
+
+function closeAddTaskModal() {
+    document
+        .getElementById("addTaskModal")
+        .classList.add("hidden");
+}
 taskType.addEventListener(
     "change",
     updateTaskUI

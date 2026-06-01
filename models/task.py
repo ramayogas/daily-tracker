@@ -73,12 +73,17 @@ class Task(db.Model):
         db.String(20),
         default="one_time"
     )
+    
+    custom_type = db.Column(
+    db.String(20),
+    nullable=True
+    )   
 
-    repeat_type = db.Column(
-        db.String(20),
+    custom_value = db.Column(
+        db.Integer,
         nullable=True
     )
-
+        
     repeat_days = db.Column(
         db.String(100),
         nullable=True

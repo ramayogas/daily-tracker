@@ -29,7 +29,10 @@ task_bp = Blueprint(
 @task_bp.route("/tasks")
 @login_required
 def tasks():
-
+    task_type = request.args.get(
+        "task_type",
+        "all"
+    )
     search = request.args.get(
         "search",
         ""
@@ -99,6 +102,12 @@ def tasks():
         user_id=current_user.id,
         archived=False
     ).all()
+    
+    if task_type != "all":
+
+        query = query.filter_by(
+            task_type=task_type
+        )
 
     return render_template(
         "tasks.html",
@@ -107,7 +116,8 @@ def tasks():
         search=search,
         status=status,
         urgency=urgency,
-        selected_category=category_id
+        selected_category=category_id,
+        task_type=task_type
     )
 
 @task_bp.route(
@@ -129,9 +139,15 @@ def add_task():
         "urgency"
     )
 
-    due_date = request.form.get(
-        "due_date"
-    )
+    due_date_raw = request.form.get("due_date")
+
+    if due_date_raw:
+        due_date = datetime.strptime(
+            due_date_raw,
+            "%Y-%m-%dT%H:%M"
+        )
+    else:
+        due_date = None
 
     note = request.form.get(
         "note"
@@ -141,21 +157,18 @@ def add_task():
     "task_type"
     )
 
-    repeat_type = request.form.get(
-        "repeat_type"
+    custom_type = request.form.get(
+    "custom_type"
+    )
+
+    custom_value = request.form.get(
+        "custom_value"
     )
 
     repeat_days = request.form.getlist(
         "repeat_days"
     )
 
-    parsed_due_date = None
-
-    if due_date:
-        parsed_due_date = datetime.strptime(
-            due_date,
-            "%Y-%m-%dT%H:%M"
-        )
 
     new_task = Task(
         title=title,
@@ -165,15 +178,18 @@ def add_task():
         due_date=due_date,
         note=note,
         task_type=task_type,
-        repeat_type=repeat_type
-        if repeat_type
-        else None,
-        repeat_days=",".join(
-            repeat_days
-        )
+         repeat_days=", ".join(repeat_days)
         if repeat_days
+        else None,
+
+        custom_type=custom_type
+        if custom_type
+        else None,
+
+        custom_value=int(custom_value)
+        if custom_value
         else None
-    )
+        )
 
     db.session.add(new_task)
     db.session.commit()
@@ -245,6 +261,15 @@ def toggle_task(id):
 
     db.session.commit()
 
+    next_page = request.args.get(
+    "next"
+    )
+
+    if next_page == "dashboard":
+        return redirect(
+            url_for("dashboard.dashboard")
+        )
+
     return redirect(
         url_for("task.tasks")
     )
@@ -267,35 +292,43 @@ def edit_task(id):
     ).all()
 
     if request.method == "POST":
+        task.task_type = request.form.get(
+            "task_type"
+        )
 
+        task.repeat_days = ", ".join(
+            request.form.getlist("repeat_days")
+        )
+
+        task.custom_type = request.form.get(
+            "custom_type"
+        )
+
+        task.custom_value = request.form.get(
+            "custom_value"
+        )
         task.title = request.form.get(
             "title"
         )
-
         category_id = request.form.get(
             "category_id"
         )
-
         task.category_id = (
             category_id
             if category_id
             else None
         )
-
         task.urgency = request.form.get(
             "urgency"
         )
-
         due_date = request.form.get(
             "due_date"
         )
-
         task.note = request.form.get(
             "note"
         )
 
         if due_date:
-
             task.due_date = (
                 datetime.strptime(
                     due_date,
@@ -305,20 +338,19 @@ def edit_task(id):
 
         else:
             task.due_date = None
-
         db.session.commit()
-
         flash(
             "Task updated.",
             "success"
         )
-
         return redirect(
             url_for("task.tasks")
         )
 
+    
     return render_template(
         "edit_task.html",
         task=task,
         categories=categories
     )
+    
