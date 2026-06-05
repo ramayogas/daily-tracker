@@ -54,31 +54,29 @@ def dashboard():
             ) * 100
         )
 
-    today = datetime.today().date()
-
     today_tasks = [
     task
     for task in all_tasks
     if (
         not task.is_done
         and is_due_today(task)
+        and task.task_type != "habit"
     )
-]
+    ]
     
-    today_tasks = sorted(
-        today_tasks,
-        key=lambda x: x.due_date or datetime.max
-    )[:5]
+    today_tasks = today_tasks[:5]
   
     habit_tasks = [
-        task
-        for task in all_tasks
-        if (
-            task.task_type == "habit"
-            and not task.is_done
-            and is_due_today(task)
-        )
-    ][:5]
+    task
+    for task in all_tasks
+    if (
+        not task.is_done
+        and task.task_type == "habit"
+        and is_due_today(task)
+    )
+    ]
+    
+    habit_tasks = habit_tasks[:5]
     
     recent_completed = sorted(
         [
@@ -90,11 +88,13 @@ def dashboard():
     )[:5]
     
     custom_tasks = [
-        task for task in all_tasks
-        if (
-            task.task_type == "custom"
-            and not task.is_done
-        )
+    task
+    for task in all_tasks
+    if (
+        task.task_type == "custom"
+        and not task.is_done
+        and is_due_today(task)
+    )
     ]
 
     return render_template(

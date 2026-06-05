@@ -1,175 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}
-Calendar
-{% endblock %}
-
 {% block body %}
 
-<h1 class="text-3xl font-bold mb-6">
+<h1 class="text-2xl font-bold mb-4">
     Calendar
 </h1>
 
-<div class="flex justify-between items-center mb-6">
-    <div></div>
-    <input
-        type="month"
-        id="monthPicker"
-        value="{{ year }}-{{ '%02d'|format(month) }}"
-        class="border rounded-lg px-3 py-2"
-    >
-</div>
+<div class="grid grid-cols-7 gap-2">
 
-<div class="bg-white rounded-2xl shadow p-6 mb-6">
-    <h2
-        id="selectedDateTitle"
-        class="font-bold text-xl mb-4"
-    >
-        Select a date
-    </h2>
-    <div
-        id="selectedTasks"
-        class="space-y-2"
-    >
-        <p class="text-gray-400">
-            Click a date.
-        </p>
-    </div>
-</div>
+    {% for day in calendar_data %}
 
-<div class="bg-white rounded-2xl shadow p-6">
-    <h2 class="text-xl font-bold mb-4">
-        {{ month }}/{{ year }}
-    </h2>
-    <div class="grid grid-cols-7 gap-2">
-        {% for day in
-            ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
-        %}
-        <div class="font-bold text-center">
-            {{ day }}
-        </div>
-        {% endfor %}
-        {% for week in month_calendar %}
-            {% for day in week %}
-                <div
-                    class="
-                        calendar-day
-                        border
-                        rounded-lg
-                        min-h-[100px]
-                        p-2
-                        cursor-pointer
-                    "
-                    data-date="{{ year }}-{{ '%02d'|format(month) }}-{{ '%02d'|format(day) }}"
-                >
-                {% if day != 0 %}
-                    <div class="font-bold mb-2">
-                        {{ day }}
-                    </div>
-                    {% set count = namespace(value=0) %}
-                    {% for task in tasks %}
-                        {% if task.due_date
-                        and task.due_date.day == day
-                        and task.due_date.month == month
-                        and task.due_date.year == year %}
-                            {% set count.value = count.value + 1 %}
-                        {% endif %}
-                    {% endfor %}
-                    {% if count.value > 0 %}
-                    <div class="text-xs text-blue-500">
-                        ● {{ count.value }}
-                    </div>
-                    {% endif %}
-                    {% for task in tasks %}
-                        {% if task.due_date
-                        and task.due_date.day == day
-                        and task.due_date.month == month
-                        and task.due_date.year == year %}
-                        <div class="text-xs bg-blue-100 rounded px-2 py-1 mb-1">
-                            {{ task.title }}
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
+    <a href="/calendar?year={{ year }}&month={{ month }}&date={{ day.date }}">
+
+        <div class="border p-3 rounded">
+
+            <div>
+                {{ day.date.day }}
             </div>
-            {% endfor %}
-        {% endfor %}
-    </div>
+
+            {% if day.count > 0 %}
+                <div class="text-xs bg-black text-white rounded px-2 mt-1 inline-block">
+                    {{ day.count }}
+                </div>
+            {% endif %}
+
+        </div>
+
+    </a>
+
+    {% endfor %}
+
 </div>
 
-<script>
-    const tasks =
-        {{ tasks_json|tojson }}
-    document
-    .querySelectorAll(
-        ".calendar-day"
-    )
-    .forEach(day => {
-        day.addEventListener(
-            "click",
-            () => {
-                const date =
-                    day.dataset.date
+<hr class="my-6">
 
-                const matched =
-                    tasks.filter(
-                        task =>
-                        task.date === date
-                    )
-                document
-                .getElementById(
-                    "selectedDateTitle"
-                )
-                .innerText = date
-                let html = ""
-                if (
-                    matched.length === 0
-                ) {
-                    html =
-                    `
-                    <p class="text-gray-400">
-                        No tasks
-                    </p>
-                    `
-                } else {
-                    matched.forEach(
-                        task => {
-                            html +=
-                            `
-                            <div class="border rounded-lg p-3">
-                                ${task.title}
-                            </div>
-                            `
-                        }
-                    )
-                }
-                document
-                .getElementById(
-                    "selectedTasks"
-                )
-                .innerHTML = html
-            }
-        )
-    })
+<h2 class="text-lg font-bold">
+    Selected Day Tasks
+</h2>
 
-
-    document
-    .getElementById(
-        "monthPicker"
-    )
-    .addEventListener(
-        "change",
-        function() {
-            const [
-                year,
-                month
-            ] = this.value.split(
-                "-"
-            )
-            window.location =
-                `/calendar?year=${year}&month=${month}`
-        }
-    )
-</script>
+{% for task in selected_tasks %}
+    <div class="p-2 border rounded mt-2">
+        {{ task.title }}
+    </div>
+{% endfor %}
 
 {% endblock %}

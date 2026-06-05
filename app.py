@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, app
 from flask_login import login_required
 
 from config import Config
@@ -45,7 +45,9 @@ def create_app():
     from routes.dashboard import dashboard_bp
     from routes.category import category_bp
     from routes.task import task_bp
+    from routes.calendar import calendar_bp
 
+    app.register_blueprint(calendar_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(category_bp)
