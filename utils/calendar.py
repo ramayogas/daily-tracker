@@ -6,7 +6,6 @@ def get_tasks_for_date(tasks, target_date):
     return [
         task for task in tasks
         if is_due_on(task, target_date)
-        and not task.is_done
     ]
 
 
