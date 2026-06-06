@@ -39,7 +39,10 @@
 </h2>
 
 {% for task in selected_tasks %}
-    <div class="p-2 border rounded mt-2">
+    <div class="p-2 border rounded mt-2 {% if task.is_done %}line-through opacity-50 bg-green-50{% endif %}">
+        {% if task.is_done %}
+            <span class="text-green-600 font-bold">✓</span>
+        {% endif %}
         {{ task.title }}
     </div>
 {% endfor %}
