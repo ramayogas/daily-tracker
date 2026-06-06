@@ -112,10 +112,18 @@ Dashboard
                             href="/tasks/toggle/{{ task.id }}?next=dashboard"
                             class="text-xl"
                         >
-                            {% if task.is_done %}
-                                ✅
+                            {% if task.task_type in ["habit", "custom"] %}
+                                {% if is_completed_on(task, today) %}
+                                    ✅
+                                {% else %}
+                                    ⬜
+                                {% endif %}
                             {% else %}
-                                ⬜
+                                {% if task.is_done %}
+                                    ✅
+                                {% else %}
+                                    ⬜
+                                {% endif %}
                             {% endif %}
                         </a>
 
@@ -190,11 +198,11 @@ Dashboard
                                     href="/tasks/toggle/{{ task.id }}"
                                     class="text-xl"
                                 >
-                                    {% if task.is_done %}
-                                        ✅
-                                    {% else %}
-                                        ⬜
-                                    {% endif %}
+                    {% if is_completed_on(task, today) %}
+                        ✅
+                    {% else %}
+                        ⬜
+                    {% endif %}
                                 </a>
                                 <h3 class="font-semibold">
                                     {{ task.title }}

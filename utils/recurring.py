@@ -1,4 +1,19 @@
 from datetime import date
+from models.task_completion import TaskCompletion
+
+
+def is_completed_on(task, target_date: date):
+    """Check if task is completed on a specific date"""
+    if task.task_type == "one_time":
+        # For one-time tasks, check is_done flag
+        return task.is_done
+    else:
+        # For recurring tasks, check TaskCompletion records
+        completion = TaskCompletion.query.filter_by(
+            task_id=task.id,
+            completion_date=target_date
+        ).first()
+        return completion is not None
 
 
 def is_due_on(task, target_date: date):
@@ -7,7 +22,13 @@ def is_due_on(task, target_date: date):
     if task.task_type == "one_time":
         if not task.due_date:
             return False
-        return task.due_date.date() == target_date
+        task_date = task.due_date.date() == target_date
+        
+        # Check if this one-time task is marked as done
+        if task_date and task.is_done:
+            return False
+            
+        return task_date
 
     # HABIT
     elif task.task_type == "habit":
@@ -23,7 +44,13 @@ def is_due_on(task, target_date: date):
             if d.strip()
         }
 
-        return weekday in repeat_days
+        is_due = weekday in repeat_days
+        
+        # For recurring tasks, check if this specific instance is completed
+        if is_due:
+            return not is_completed_on(task, target_date)
+            
+        return False
 
     # CUSTOM
     elif task.task_type == "custom":
@@ -33,14 +60,25 @@ def is_due_on(task, target_date: date):
                 return False
 
             days_since = (target_date - task.created_at.date()).days
-
-            return days_since % int(task.custom_value) == 0
+            is_due = days_since % int(task.custom_value) == 0
+            
+            # For recurring tasks, check if this specific instance is completed
+            if is_due:
+                return not is_completed_on(task, target_date)
+                
+            return False
 
         elif task.custom_type == "day_of_month":
             if not task.custom_value:
                 return False
 
-            return target_date.day == int(task.custom_value)
+            is_due = target_date.day == int(task.custom_value)
+            
+            # For recurring tasks, check if this specific instance is completed
+            if is_due:
+                return not is_completed_on(task, target_date)
+                
+            return False
 
     return False
 

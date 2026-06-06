@@ -251,13 +251,40 @@ def delete_task(id):
 )
 @login_required
 def toggle_task(id):
+    from datetime import date
+    from models.task_completion import TaskCompletion
 
     task = Task.query.filter_by(
         id=id,
         user_id=current_user.id
     ).first_or_404()
 
-    task.is_done = not task.is_done
+    today = date.today()
+    
+    # For recurring tasks (habit, custom), track completions by date
+    if task.task_type in ["habit", "custom"]:
+        existing_completion = TaskCompletion.query.filter_by(
+            task_id=task.id,
+            completion_date=today
+        ).first()
+        
+        if existing_completion:
+            # Mark as incomplete by removing the completion record
+            db.session.delete(existing_completion)
+        else:
+            # Mark as complete for today
+            completion = TaskCompletion(
+                task_id=task.id,
+                completion_date=today
+            )
+            db.session.add(completion)
+    else:
+        # For one-time tasks, use the is_done flag
+        task.is_done = not task.is_done
+        if task.is_done:
+            task.completed_at = datetime.utcnow()
+        else:
+            task.completed_at = None
 
     db.session.commit()
 

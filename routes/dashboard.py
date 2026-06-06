@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from flask import (
     Blueprint,
@@ -11,9 +11,9 @@ from flask_login import (
 )
 
 from models.task import Task
-
 from utils.recurring import (
-    is_due_today
+    is_due_today,
+    is_completed_on
 )
 
 dashboard_bp = Blueprint(
@@ -54,11 +54,13 @@ def dashboard():
             ) * 100
         )
 
+    today = date.today()
+    
     today_tasks = [
     task
     for task in all_tasks
     if (
-        not task.is_done
+        not is_completed_on(task, today)
         and is_due_today(task)
         and task.task_type != "habit"
     )
@@ -70,7 +72,7 @@ def dashboard():
     task
     for task in all_tasks
     if (
-        not task.is_done
+        not is_completed_on(task, today)
         and task.task_type == "habit"
         and is_due_today(task)
     )
@@ -92,7 +94,7 @@ def dashboard():
     for task in all_tasks
     if (
         task.task_type == "custom"
-        and not task.is_done
+        and not is_completed_on(task, today)
         and is_due_today(task)
     )
     ]
@@ -106,5 +108,7 @@ def dashboard():
     today_tasks=today_tasks,
     habit_tasks=habit_tasks,
     custom_tasks=custom_tasks,
-    recent_completed=recent_completed
+    recent_completed=recent_completed,
+    is_completed_on=is_completed_on,
+    today=today
 )

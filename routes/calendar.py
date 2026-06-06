@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 
 from models.task import Task
 from utils.calendar import get_month_days, get_tasks_for_date
+from utils.recurring import is_completed_on
 
 
 calendar_bp = Blueprint("calendar", __name__)
@@ -62,7 +63,9 @@ def calendar():
         "calendar.html",
         calendar_data=calendar_data,
         selected_tasks=selected_tasks,
+        selected_date=selected_date,
         year=year,
-        month=month
+        month=month,
+        is_completed_on=is_completed_on
     )
     

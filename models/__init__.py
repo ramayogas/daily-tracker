@@ -7,3 +7,6 @@ login_manager = LoginManager()
 login_manager.login_view = "auth.login"
 login_manager.login_message = "Please login first."
 login_manager.login_message_category = "warning"
+
+# Import models to register them
+from models.task_completion import TaskCompletion

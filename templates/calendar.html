@@ -39,8 +39,12 @@
 </h2>
 
 {% for task in selected_tasks %}
-    <div class="p-2 border rounded mt-2 {% if task.is_done %}line-through opacity-50 bg-green-50{% endif %}">
-        {% if task.is_done %}
+    <div class="p-2 border rounded mt-2 {% if task.task_type in ['habit', 'custom'] %}{% if is_completed_on(task, selected_date) %}line-through opacity-50 bg-green-50{% endif %}{% elif task.is_done %}line-through opacity-50 bg-green-50{% endif %}">
+        {% if task.task_type in ['habit', 'custom'] %}
+            {% if is_completed_on(task, selected_date) %}
+                <span class="text-green-600 font-bold">✓</span>
+            {% endif %}
+        {% elif task.is_done %}
             <span class="text-green-600 font-bold">✓</span>
         {% endif %}
         {{ task.title }}
