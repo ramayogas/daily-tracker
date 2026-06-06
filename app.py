@@ -52,7 +52,7 @@ def create_app():
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(category_bp)
     app.register_blueprint(task_bp)
-    app.register_blueprint(calendar_bp)
+
 
     # create database
     with app.app_context():
