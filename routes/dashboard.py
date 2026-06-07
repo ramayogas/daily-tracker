@@ -32,26 +32,55 @@ def dashboard():
         archived=False
     ).all()
 
-    total_tasks = len(all_tasks)
+    today = date.today()
+
+    for task in all_tasks:
+        if task.task_type in ["habit", "custom"]:
+            task.completed_today = is_completed_on(
+                task,
+                today
+            )
+        else:
+            task.completed_today = task.is_done
+
+    today = date.today()
+
+    today_due_tasks = [
+        task
+        for task in all_tasks
+        if is_due_today(task)
+    ]
+
+    total_tasks = len(today_due_tasks)
+
+    today = date.today()
 
     completed_tasks = len([
         task for task in all_tasks
-        if task.is_done
+        if is_due_today(task)
+        and is_completed_on(task, today)
     ])
+
+    today = date.today()
 
     pending_tasks = len([
         task for task in all_tasks
-        if not task.is_done
+        if is_due_today(task)
+        and not is_completed_on(task, today)
     ])
 
     completion_rate = 0
 
-    if total_tasks > 0:
+    today_due_tasks = [
+        task for task in all_tasks
+        if is_due_today(task)
+    ]
+
+    total_tasks = len(today_due_tasks)
+
+    if total_tasks:
         completion_rate = round(
-            (
-                completed_tasks /
-                total_tasks
-            ) * 100
+            completed_tasks * 100 / total_tasks
         )
 
     today = date.today()
@@ -83,7 +112,7 @@ def dashboard():
     recent_completed = sorted(
         [
             task for task in all_tasks
-            if task.is_done
+            if task.completed_today
         ],
         key=lambda x: x.created_at,
         reverse=True
@@ -98,6 +127,8 @@ def dashboard():
         and is_due_today(task)
     )
     ]
+
+
 
     return render_template(
     "dashboard.html",

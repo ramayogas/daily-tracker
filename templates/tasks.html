@@ -357,11 +357,19 @@ Task
                     href="/tasks/toggle/{{ task.id }}"
                     class="text-2xl"
                 >
-                    {% if task.is_done %}
-                        ✅
-                    {% else %}
-                        ⬜
-                    {% endif %}
+                     {% if task.task_type in ["habit", "custom"] %}
+                                {% if is_completed_on(task, today) %}
+                                    ✅
+                                {% else %}
+                                    ⬜
+                                {% endif %}
+                            {% else %}
+                                {% if task.is_done %}
+                                    ✅
+                                {% else %}
+                                    ⬜
+                                {% endif %}
+                            {% endif %}
                 </a>
                 <div>
 

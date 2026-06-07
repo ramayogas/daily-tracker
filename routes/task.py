@@ -1,4 +1,10 @@
-from datetime import datetime
+from datetime import date, datetime
+from models import db
+from models import task
+from models.task import Task
+from models.category import Category
+from utils.recurring import is_completed_on
+
 
 from flask import (
     Blueprint,
@@ -14,10 +20,7 @@ from flask_login import (
     current_user
 )
 
-from models import db
-from models import task
-from models.task import Task
-from models.category import Category
+
 
 
 task_bp = Blueprint(
@@ -112,6 +115,8 @@ def tasks():
     return render_template(
         "tasks.html",
         tasks=tasks,
+        today=date.today(),
+        is_completed_on=is_completed_on,
         categories=categories,
         search=search,
         status=status,

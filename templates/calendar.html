@@ -2,42 +2,59 @@
 
 {% block body %}
 
+<form method="GET" class="mb-4">
+
+    <input
+        type="month"
+        id="monthPicker"
+        value="{{ year }}-{{ '%02d'|format(month) }}"
+    >
+
+    <input type="hidden" name="year" id="yearInput">
+    <input type="hidden" name="month" id="monthInput">
+
+</form>
+
+<script>
+document
+.getElementById("monthPicker")
+.addEventListener("change", function() {
+
+    const [year, month] =
+        this.value.split("-");
+
+    document.getElementById("yearInput").value = year;
+    document.getElementById("monthInput").value = month;
+
+    this.form.submit();
+});
+</script>
+
 <h1 class="text-2xl font-bold mb-4">
     Calendar
 </h1>
 
 <div class="grid grid-cols-7 gap-2">
-
     {% for day in calendar_data %}
-
     <a href="/calendar?year={{ year }}&month={{ month }}&date={{ day.date }}">
-
         <div class="border p-3 rounded">
-
             <div>
                 {{ day.date.day }}
             </div>
-
             {% if day.count > 0 %}
                 <div class="text-xs bg-black text-white rounded px-2 mt-1 inline-block">
                     {{ day.count }}
                 </div>
             {% endif %}
-
         </div>
-
     </a>
-
     {% endfor %}
 
 </div>
-
 <hr class="my-6">
-
 <h2 class="text-lg font-bold">
     Selected Day Tasks
 </h2>
-
 {% for task in selected_tasks %}
     <div class="p-2 border rounded mt-2 {% if task.task_type in ['habit', 'custom'] %}{% if is_completed_on(task, selected_date) %}line-through opacity-50 bg-green-50{% endif %}{% elif task.is_done %}line-through opacity-50 bg-green-50{% endif %}">
         {% if task.task_type in ['habit', 'custom'] %}
